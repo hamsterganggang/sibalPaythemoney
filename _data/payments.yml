@@ -23,6 +23,6 @@ members:
   - name: 이태경
     status: ["O", "O", "O", ""]
   - name: 박정희
-    status: ["O", "O", "O", ""]
+    status: ["O", "O", "안내서", ""]
   - name: 홍서진
     status: ["5만원", "", "", ""]
