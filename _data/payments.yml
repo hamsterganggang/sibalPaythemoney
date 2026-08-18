@@ -11,18 +11,18 @@
 
 title: DEU 카르텔 자금 현황
 
-months: ["4월", "5월", "6월", "7월", "8월"]
+months: ["4월", "5월", "6월", "7월", "8월", "9월"]
 
 members:
   - name: 강경훈
-    status: ["O", "O", "O", "", ""]
+    status: ["O", "O", "O", "", "", ""]
   - name: 김수훈
-    status: ["O", "O", "", "", ""]
+    status: ["O", "O", "", "", "", ""]
   - name: 김성윤
-    status: ["O", "O", "O", "O", ""]
+    status: ["O", "O", "O", "O", "", ""]
   - name: 이태경
-    status: ["O", "O", "O", "", ""]
+    status: ["O", "O", "O", "O", "O", ""]
   - name: 박정희
-    status: ["O", "O", "", "", ""]
+    status: ["O", "O", "", "", "", ""]
   - name: 홍서진
-    status: ["O", "O", "O", "O", ""]
+    status: ["O", "O", "O", "O", "O", ""]
