@@ -17,7 +17,7 @@ members:
   - name: 강경훈
     status: ["O", "O", "O", "", "", ""]
   - name: 김수훈
-    status: ["O", "O", "", "", "", ""]
+    status: ["O", "O", "O", "O", "", ""]
   - name: 김성윤
     status: ["O", "O", "O", "O", "", ""]
   - name: 이태경
