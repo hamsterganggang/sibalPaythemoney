@@ -50,7 +50,6 @@ seasons:
         status: ["O", "O", "O", "O", "O"]
       - name: 이태경
         status: ["O", "O", "O", "O", "O"]
-        memo: 9·10월분 추가 납부 (20만원)
       - name: 박정희
         status: ["O", "O", "O", "", ""]
       - name: 홍서진
