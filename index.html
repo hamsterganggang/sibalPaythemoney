@@ -9,140 +9,343 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ data.title }}</title>
+<script>
+  // 깜빡임 방지: 렌더 전에 입장 여부 결정
+  document.documentElement.classList.add('js');
+  try { if (sessionStorage.getItem('deu-entered')) document.documentElement.classList.add('entered'); } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #12141a;
-    --card: #1c1f28;
-    --card-2: #232733;
-    --line: #2c303d;
-    --text: #e8eaf0;
-    --muted: #8a8fa3;
-    --gold: #e6b84c;
-    --gold-bg: rgba(230, 184, 76, 0.12);
-    --paid: #3ddc84;
-    --paid-bg: rgba(61, 220, 132, 0.12);
-    --unpaid: #ff5c5c;
-    --unpaid-bg: rgba(255, 92, 92, 0.14);
-    --future: #5d6275;
+    --bg: #0b0908;
+    --leather: #17120f;
+    --leather-2: #1f1813;
+    --line: #3a2e22;
+    --text: #efe6d6;
+    --muted: #9b8b75;
+    --gold: #c9a24a;
+    --gold-hi: #f0cf7a;
+    --gold-bg: rgba(201, 162, 74, 0.12);
+    --paid: #9fc98a;
+    --paid-bg: rgba(159, 201, 138, 0.08);
+    --blood: #c0392b;
+    --blood-hi: #e2554a;
+    --blood-bg: rgba(192, 57, 43, 0.16);
+    --future: #5a4e42;
+    --paper: #e9dcbf;
+    --ink: #2a1d12;
+    --serif: "Nanum Myeongjo", "Batang", serif;
+    --display: "Playfair Display", "Nanum Myeongjo", serif;
+    --sans: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--bg); }
   body {
-    background: var(--bg);
+    background:
+      radial-gradient(ellipse 70% 45% at 50% -5%, rgba(240, 207, 122, 0.16), transparent 70%),
+      radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.75) 100%),
+      var(--bg);
+    background-attachment: fixed;
     color: var(--text);
-    font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-family: var(--sans);
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    padding: 32px 16px;
+    padding: 40px 16px 48px;
+    overflow-x: hidden;
   }
-  .wrap { width: 100%; max-width: 720px; }
-  header { text-align: center; margin-bottom: 24px; }
-  .badge {
-    display: inline-block;
-    font-size: 12px;
+  /* 필름 그레인 */
+  body::after {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    opacity: .07;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    z-index: 50;
+  }
+  .wrap { width: 100%; max-width: 760px; min-width: 0; position: relative; }
+
+  /* ───────── 입장 문 ───────── */
+  .gate { display: none; }
+  .js .gate {
+    display: flex;
+    position: fixed; inset: 0;
+    z-index: 100;
+    align-items: center; justify-content: center;
+    background: #050403;
+    transition: opacity .8s ease .9s, visibility 0s linear 1.7s;
+  }
+  .entered .gate { display: none; }
+  .gate .door {
+    position: absolute; top: 0; bottom: 0; width: 50%;
+    background:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 2px, transparent 2px 46px),
+      linear-gradient(180deg, #2a1c12, #1a110b);
+    transition: transform 1.3s cubic-bezier(.7, 0, .25, 1);
+    box-shadow: inset 0 0 80px rgba(0,0,0,.8);
+  }
+  .gate .door.l { left: 0; border-right: 2px solid #0a0705; }
+  .gate .door.r { right: 0; border-left: 2px solid #0a0705; }
+  .gate .door.l::after, .gate .door.r::after {
+    content: ""; position: absolute; top: 74%; width: 10px; height: 46px;
+    border-radius: 6px; background: linear-gradient(var(--gold-hi), var(--gold));
+    box-shadow: 0 0 12px rgba(201,162,74,.5);
+  }
+  .gate .door.l::after { right: 18px; }
+  .gate .door.r::after { left: 18px; }
+  .gate-inner {
+    position: relative; z-index: 2;
+    text-align: center;
+    padding: 24px;
+    transition: opacity .4s;
+  }
+  .peep {
+    width: 180px; height: 46px; margin: 0 auto 28px;
+    border: 3px solid var(--gold);
+    border-radius: 4px;
+    background: #000;
+    position: relative; overflow: hidden;
+    box-shadow: 0 0 30px rgba(0,0,0,.9), inset 0 0 20px rgba(0,0,0,1);
+  }
+  .peep .eyes {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, 140%);
+    display: flex; gap: 26px;
+    transition: transform .5s ease;
+  }
+  .peep .eyes i { width: 16px; height: 8px; background: var(--paper); border-radius: 50%; position: relative; }
+  .peep .eyes i::after { content: ""; position: absolute; left: 5px; top: 1px; width: 6px; height: 6px; border-radius: 50%; background: #111; }
+  .gate.watching .peep .eyes { transform: translate(-50%, -50%); }
+  .gate-line {
+    font-family: var(--serif);
+    font-size: 20px; font-weight: 700;
+    min-height: 1.6em;
+    color: var(--text);
+    letter-spacing: 1px;
+    text-shadow: 0 2px 10px #000;
+  }
+  .gate-sub { color: var(--muted); font-size: 12px; letter-spacing: 4px; margin-top: 8px; font-family: var(--display); }
+  .knock {
+    margin-top: 32px;
+    font: 700 15px var(--serif);
     letter-spacing: 3px;
-    color: var(--gold);
+    color: var(--gold-hi);
+    background: transparent;
     border: 1px solid var(--gold);
-    border-radius: 999px;
-    padding: 4px 14px;
+    padding: 14px 28px;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+  }
+  .knock:hover { background: var(--gold); color: #120d08; }
+  .knock:disabled { opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .gate.shake .door { animation: shake .12s 3; }
+  @keyframes shake { 50% { transform: translateX(3px); } }
+  .gate.open .door.l { transform: translateX(-102%); }
+  .gate.open .door.r { transform: translateX(102%); }
+  .gate.open .gate-inner { opacity: 0; }
+  .gate.open { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  /* 입장 후 장부 등장 */
+  .js .wrap { opacity: 0; transform: translateY(14px); transition: opacity 1s ease .6s, transform 1s ease .6s; }
+  .js.entered .wrap, .js .wrap.in { opacity: 1; transform: none; }
+
+  /* ───────── 헤더 ───────── */
+  header { text-align: center; margin-bottom: 32px; }
+  .crest {
+    font-family: var(--display);
+    font-size: 12px; letter-spacing: 6px;
+    color: var(--gold);
+    display: flex; align-items: center; justify-content: center; gap: 12px;
     margin-bottom: 14px;
   }
-  h1 { font-size: 26px; font-weight: 800; }
-  .subtitle { color: var(--muted); font-size: 13px; margin-top: 8px; }
-  .play {
-    display: inline-block;
-    margin-top: 16px;
-    padding: 10px 18px;
-    border-radius: 999px;
-    background: var(--gold);
-    color: #1a1a1a;
-    font-size: 14px;
-    font-weight: 800;
-    text-decoration: none;
-    transition: transform .15s, box-shadow .15s;
+  .crest::before, .crest::after { content: ""; width: 40px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+  .crest::after { transform: scaleX(-1); }
+  h1 {
+    font-family: var(--serif);
+    font-size: 30px; font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, #8a6a2a);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 0 transparent;
   }
-  .play:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(230, 184, 76, .35); }
+  .motto {
+    font-family: var(--display);
+    font-style: italic;
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  .subtitle { color: var(--muted); font-size: 12px; margin-top: 4px; letter-spacing: 1px; }
+  .play {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 20px;
+    padding: 9px 18px;
+    border: 1px solid var(--line);
+    background: var(--leather);
+    color: var(--text);
+    font-size: 13px; font-weight: 700;
+    text-decoration: none;
+    letter-spacing: .5px;
+    transition: border-color .2s, color .2s;
+  }
+  .play:hover { border-color: var(--gold); color: var(--gold-hi); }
+  .play small { color: var(--muted); font-weight: 500; }
 
-  /* 시즌 탭 */
+  /* ───────── 탭 ───────── */
   .tabs {
     display: flex;
-    gap: 6px;
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 5px;
-    margin-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
   }
   .tab {
     flex: 1;
     border: 0;
     background: transparent;
     color: var(--muted);
-    font: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 10px 8px;
-    border-radius: 10px;
+    font: 700 15px var(--serif);
+    letter-spacing: 2px;
+    padding: 12px 8px;
     cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color .2s, border-color .2s;
   }
   .tab:hover { color: var(--text); }
-  .tab[aria-selected="true"] { background: var(--gold-bg); color: var(--gold); }
+  .tab[aria-selected="true"] { color: var(--gold-hi); border-bottom-color: var(--gold); }
   .tab .live {
-    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
-    background: var(--paid); margin-left: 6px; vertical-align: middle;
+    display: inline-block; font: 700 9px var(--sans); letter-spacing: 1px;
+    color: var(--blood-hi); border: 1px solid var(--blood); padding: 1px 5px; margin-left: 8px;
+    vertical-align: middle;
+    animation: pulse 2s infinite;
   }
+  @keyframes pulse { 50% { opacity: .45; } }
 
-  .season + .season { margin-top: 40px; }
+  .season + .season { margin-top: 48px; }
   .js .season[hidden] { display: none; }
-  .season-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-  }
-  .season-head h2 { font-size: 20px; font-weight: 800; }
-  .season-head .period { color: var(--muted); font-size: 13px; }
+  .season-head { text-align: center; margin-bottom: 20px; }
+  .season-head .chapter { font-family: var(--display); font-size: 12px; letter-spacing: 5px; color: var(--gold); }
+  .season-head h2 { font-family: var(--serif); font-size: 24px; font-weight: 800; margin-top: 4px; }
+  .season-head .period { color: var(--muted); font-size: 13px; margin-top: 4px; }
 
-  /* 요약 카드 */
+  /* ───────── 요약 ───────── */
   .stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 12px;
-  }
-  .stat {
-    background: var(--card);
     border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 12px;
+    background: var(--leather);
+    margin-bottom: 28px;
   }
-  .stat .label { color: var(--muted); font-size: 12px; }
-  .stat .value { font-size: 18px; font-weight: 800; margin-top: 4px; font-variant-numeric: tabular-nums; }
-  .stat .value.gold { color: var(--gold); }
+  .stat { padding: 14px 12px; text-align: center; }
+  .stat + .stat { border-left: 1px solid var(--line); }
+  .stat .label { color: var(--muted); font-size: 11px; letter-spacing: 2px; }
+  .stat .value { font-family: var(--serif); font-size: 20px; font-weight: 800; margin-top: 6px; font-variant-numeric: tabular-nums; }
+  .stat .value.gold { color: var(--gold-hi); }
   .stat .value.green { color: var(--paid); }
-  .stat .value.red { color: var(--unpaid); }
-  .bar { height: 4px; background: var(--line); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-  .bar > span { display: block; height: 100%; background: var(--paid); }
+  .stat .value.red { color: var(--blood-hi); }
+  .bar { height: 3px; background: var(--line); margin: 8px auto 0; max-width: 90px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--gold); }
 
   .notice {
-    background: var(--card);
     border: 1px dashed var(--line);
-    border-radius: 12px;
-    padding: 12px 14px;
+    padding: 14px;
     color: var(--muted);
-    font-size: 13px;
-    margin-bottom: 12px;
+    font-family: var(--serif);
+    font-size: 14px;
+    margin-bottom: 28px;
     text-align: center;
+    line-height: 1.7;
   }
+  .notice b { color: var(--gold-hi); }
 
-  /* 표 */
-  .card {
-    background: var(--card);
+  .section-title {
+    display: flex; align-items: center; gap: 12px;
+    font-family: var(--serif); font-weight: 800; font-size: 15px;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin: 0 0 14px;
+  }
+  .section-title::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .section-title .en { font-family: var(--display); font-style: italic; font-weight: 700; font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+
+  /* ───────── 현상수배 ───────── */
+  .wanted-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 18px;
+    margin-bottom: 32px;
+    padding: 4px;
+  }
+  .poster {
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.25), transparent 60%),
+      radial-gradient(ellipse at 80% 90%, rgba(120,80,30,.25), transparent 60%),
+      var(--paper);
+    color: var(--ink);
+    padding: 14px 12px 12px;
+    text-align: center;
+    box-shadow: 0 10px 24px rgba(0,0,0,.6);
+    transform: rotate(-2deg);
+    position: relative;
+    transition: transform .2s;
+  }
+  .poster:nth-child(2n) { transform: rotate(1.6deg); }
+  .poster:nth-child(3n) { transform: rotate(-.8deg); }
+  .poster:hover { transform: rotate(0) scale(1.04); z-index: 2; }
+  .poster::before {
+    content: ""; position: absolute; top: -6px; left: 50%; width: 12px; height: 12px; margin-left: -6px;
+    border-radius: 50%; background: radial-gradient(circle at 35% 35%, #e66, #800);
+    box-shadow: 0 2px 3px rgba(0,0,0,.5);
+  }
+  .poster .w { font-family: var(--display); font-weight: 900; font-size: 24px; letter-spacing: 3px; line-height: 1; }
+  .poster .w-sub { font-size: 10px; letter-spacing: 3px; margin-top: 3px; font-weight: 700; }
+  .poster .mug {
+    width: 64px; height: 64px; margin: 10px auto 8px;
+    border: 2px solid var(--ink);
+    background: linear-gradient(#cdbd9a, #b9a67f);
+    display: flex; align-items: flex-end; justify-content: center;
+    overflow: hidden;
+  }
+  .poster .mug span {
+    width: 40px; height: 52px; background: var(--ink); border-radius: 20px 20px 0 0;
+    position: relative; opacity: .85;
+  }
+  .poster .mug span::before {
+    content: ""; position: absolute; top: -2px; left: 7px; width: 26px; height: 26px; border-radius: 50%; background: var(--ink);
+    box-shadow: 0 0 0 2px #b9a67f;
+  }
+  .poster .name { font-family: var(--serif); font-size: 19px; font-weight: 800; }
+  .poster .crime { font-size: 11px; margin-top: 4px; opacity: .75; }
+  .poster .bounty { font-family: var(--serif); font-weight: 800; font-size: 15px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(42,29,18,.5); }
+  .poster .bounty small { display: block; font-size: 10px; font-weight: 700; letter-spacing: 2px; opacity: .7; }
+  .poster .stamp {
+    position: absolute; right: 6px; top: 42%;
+    border: 2px solid var(--blood); color: var(--blood);
+    font: 900 11px var(--sans); letter-spacing: 1px;
+    padding: 2px 6px; transform: rotate(-14deg); opacity: .8;
+  }
+  .peace {
     border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 8px;
+    background: var(--leather);
+    padding: 18px;
+    text-align: center;
+    font-family: var(--serif);
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+  .peace b { color: var(--paid); }
+
+  /* ───────── 장부 ───────── */
+  .ledger {
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.02), transparent 30%),
+      var(--leather);
+    border: 1px solid var(--line);
+    outline: 1px solid rgba(201,162,74,.25);
+    outline-offset: -6px;
+    padding: 12px;
     overflow-x: auto;
   }
   table { width: 100%; border-collapse: collapse; }
@@ -150,29 +353,31 @@
     padding: 12px 10px;
     text-align: center;
     border-bottom: 1px solid var(--line);
-    font-size: 15px;
+    font-size: 14px;
     white-space: nowrap;
   }
   tr:last-child td { border-bottom: none; }
-  thead th { color: var(--muted); font-size: 13px; font-weight: 600; vertical-align: bottom; }
-  thead th .yr { display: block; font-size: 10px; color: var(--gold); font-weight: 700; }
+  tbody tr { transition: background .15s; }
+  tbody tr:hover { background: rgba(201,162,74,.05); }
+  thead th { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: 1px; vertical-align: bottom; border-bottom: 1px solid var(--gold); }
+  thead th .yr { display: block; font-size: 10px; color: var(--gold); font-family: var(--display); letter-spacing: 1px; }
   th.name, td.name {
     text-align: left;
-    padding-left: 16px;
+    padding-left: 14px;
     position: sticky;
     left: 0;
-    background: var(--card);
+    background: var(--leather);
     z-index: 1;
   }
-  td.name { font-weight: 700; }
-  td.name .memo { display: block; font-size: 11px; font-weight: 500; color: var(--gold); margin-top: 2px; }
-  .paid { color: var(--paid); background: var(--paid-bg); font-weight: 700; }
-  .unpaid { color: var(--unpaid); background: var(--unpaid-bg); font-weight: 700; font-size: 13px; }
+  td.name { font-family: var(--serif); font-weight: 800; font-size: 15px; }
+  td.name .memo { display: block; font-family: var(--sans); font-size: 11px; font-weight: 500; color: var(--gold); margin-top: 2px; }
+  .paid { color: var(--paid); background: var(--paid-bg); font-weight: 800; font-family: var(--serif); }
+  .unpaid { color: var(--blood-hi); background: var(--blood-bg); font-weight: 800; font-size: 12px; }
   .future { color: var(--future); font-size: 12px; }
-  .count { font-size: 13px; font-weight: 700; }
+  .count { font-size: 13px; font-weight: 800; }
   .count small { display: block; font-size: 11px; font-weight: 600; opacity: .85; }
-  .count.zero { color: var(--paid); }
-  .count.some { color: var(--unpaid); }
+  .count.zero { color: var(--gold-hi); }
+  .count.some { color: var(--blood-hi); }
   .count.none { color: var(--future); }
 
   .legend {
@@ -181,35 +386,58 @@
     flex-wrap: wrap;
     gap: 8px 20px;
     margin-top: 16px;
-    font-size: 13px;
+    font-size: 12px;
     color: var(--muted);
   }
-  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+  .dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; }
   .dot.g { background: var(--paid); }
-  .dot.r { background: var(--unpaid); }
+  .dot.r { background: var(--blood-hi); }
   .dot.f { background: var(--future); }
 
-  footer { text-align: center; margin-top: 24px; color: var(--muted); font-size: 12px; }
+  footer { text-align: center; margin-top: 40px; color: var(--muted); font-size: 12px; line-height: 1.8; }
+  footer .omerta { font-family: var(--display); font-style: italic; font-size: 13px; color: var(--gold); letter-spacing: 1px; }
+  .reenter { background: none; border: 0; color: var(--muted); font: inherit; font-size: 11px; text-decoration: underline; cursor: pointer; margin-top: 6px; }
+  .reenter:hover { color: var(--gold); }
 
   @media (max-width: 560px) {
+    body { padding-top: 28px; }
+    h1 { font-size: 24px; }
     .stats { grid-template-columns: repeat(2, 1fr); }
-    th, td { padding: 10px 8px; font-size: 14px; }
+    .stat:nth-child(3) { border-left: 0; }
+    .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+    th, td { padding: 10px 8px; font-size: 13px; }
+    .wanted-list { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-duration: .01s !important; transition-delay: 0s !important; }
   }
 </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="gate" id="gate" aria-hidden="true">
+    <div class="door l"></div>
+    <div class="door r"></div>
+    <div class="gate-inner">
+      <div class="peep"><div class="eyes"><i></i><i></i></div></div>
+      <p class="gate-line" id="gateLine">여긴 패밀리 전용이다.</p>
+      <p class="gate-sub">MEMBERS ONLY</p>
+      <button class="knock" id="knock">똑 · 똑 · 똑</button>
+    </div>
+  </div>
+
+  <div class="wrap" id="wrap">
     <header>
-      <div class="badge">DEU CARTEL</div>
+      <div class="crest">LA FAMIGLIA DEU</div>
       <h1>{{ data.title }}</h1>
-      <p class="subtitle">고아별 · 월별 자금 납부 현황</p>
-      <a class="play" href="https://gorisanson.github.io/pikachu-volleyball-p2p-online/ko/" target="_blank" rel="noopener">🏐 피카츄 배구 한판 (온라인 대전)</a>
+      <p class="motto">"패밀리는 돈 문제로 장난치지 않는다."</p>
+      <p class="subtitle">고아별 · 월별 상납 장부</p>
+      <a class="play" href="https://gorisanson.github.io/pikachu-volleyball-p2p-online/ko/" target="_blank" rel="noopener">🏐 아지트 오락실 <small>피카츄 배구 온라인</small></a>
     </header>
 
     <nav class="tabs" role="tablist">
       {%- for season in data.seasons %}
       <button class="tab" role="tab" data-season="{{ season.id }}" aria-selected="{% if season.id == data.current %}true{% else %}false{% endif %}">
-        {{ season.name }}{% if season.id == data.current %}<span class="live" title="진행 중"></span>{% endif %}
+        {{ season.name }}{% if season.id == data.current %}<span class="live">LIVE</span>{% endif %}
       </button>
       {%- endfor %}
     </nav>
@@ -217,6 +445,7 @@
     {% for season in data.seasons %}
     {%- comment -%} 1차 순회: 시즌 합계 계산 {%- endcomment -%}
     {%- assign fee = season.fee | plus: 0 -%}
+    {%- assign fee_man = fee | divided_by: 10000 -%}
     {%- assign s_paid = 0 -%}
     {%- assign s_unpaid = 0 -%}
     {%- for member in season.members -%}
@@ -239,25 +468,26 @@
 
     <section class="season" id="{{ season.id }}" role="tabpanel">
       <div class="season-head">
+        <div class="chapter">{% if season.id == data.current %}CURRENT OPERATION{% else %}CLOSED CASE{% endif %}</div>
         <h2>{{ season.name }}</h2>
-        <span class="period">{{ season.period }}</span>
+        <div class="period">{{ season.period }}</div>
       </div>
 
       <div class="stats">
         <div class="stat">
-          <div class="label">월 납입금</div>
-          <div class="value gold">{{ fee | divided_by: 10000 }}만원</div>
+          <div class="label">월 상납금</div>
+          <div class="value gold">{{ fee_man }}만원</div>
         </div>
         <div class="stat">
-          <div class="label">적립액</div>
+          <div class="label">조직 금고</div>
           <div class="value green">{{ paid_man }}만원</div>
         </div>
         <div class="stat">
-          <div class="label">미납액</div>
+          <div class="label">회수 대상</div>
           <div class="value {% if unpaid_man > 0 %}red{% endif %}">{{ unpaid_man }}만원</div>
         </div>
         <div class="stat">
-          <div class="label">납부율</div>
+          <div class="label">충성도</div>
           <div class="value">{% if s_due > 0 %}{{ rate }}%{% else %}-{% endif %}</div>
           <div class="bar"><span style="width: {{ rate }}%"></span></div>
         </div>
@@ -265,10 +495,44 @@
 
       {% if first_ym > now_ym %}
       {%- assign fparts = first_month | split: "-" -%}
-      <div class="notice">{{ fparts[0] }}년 {{ fparts[1] | plus: 0 }}월부터 시작합니다 · 매달 {{ fee | divided_by: 10000 }}만원</div>
+      <div class="notice">새 작전은 <b>{{ fparts[0] }}년 {{ fparts[1] | plus: 0 }}월</b>에 개시된다.<br>매달 <b>{{ fee_man }}만원</b>. 늦으면… 알지?</div>
       {% endif %}
 
-      <div class="card">
+      {%- comment -%} 현상수배: 이 시즌 채무자 {%- endcomment -%}
+      {%- assign debtors = 0 -%}
+      {%- capture posters -%}
+      {%- for member in season.members -%}
+        {%- assign debt = 0 -%}
+        {%- for month in season.months -%}
+          {%- assign ym = month | remove: "-" | plus: 0 -%}
+          {%- assign s = member.status[forloop.index0] -%}
+          {%- if s != "O" and ym <= now_ym -%}{%- assign debt = debt | plus: 1 -%}{%- endif -%}
+        {%- endfor -%}
+        {%- if debt > 0 -%}
+        {%- assign debtors = debtors | plus: 1 %}
+        <div class="poster">
+          <div class="w">WANTED</div>
+          <div class="w-sub">현 상 수 배</div>
+          <div class="mug"><span></span></div>
+          <div class="name">{{ member.name }}</div>
+          <div class="crime">상납금 {{ debt }}회 체납</div>
+          <div class="bounty"><small>현상금</small>{{ debt | times: fee_man }}만원</div>
+          <div class="stamp">체납</div>
+        </div>
+        {%- endif -%}
+      {%- endfor -%}
+      {%- endcapture -%}
+
+      {% if debtors > 0 %}
+      <h3 class="section-title">현상수배 <span class="en">Most Wanted</span></h3>
+      <div class="wanted-list">{{ posters }}
+      </div>
+      {% elsif s_due > 0 %}
+      <div class="peace">체납자 없음. <b>패밀리는 오늘도 평화롭다.</b></div>
+      {% endif %}
+
+      <h3 class="section-title">상납 장부 <span class="en">The Ledger</span></h3>
+      <div class="ledger">
         <table>
           <thead>
             <tr>
@@ -278,7 +542,7 @@
               {%- assign mm = parts[1] | plus: 0 %}
               <th>{% if forloop.first or mm == 1 %}<span class="yr">{{ parts[0] }}</span>{% endif %}{{ mm }}월</th>
               {%- endfor %}
-              <th>미납</th>
+              <th>채무</th>
             </tr>
           </thead>
           <tbody>
@@ -292,24 +556,24 @@
                 {%- assign is_blank = false -%}
                 {%- if s == "" or s == nil -%}{%- assign is_blank = true -%}{%- endif -%}
                 {%- if s == "O" %}
-              <td class="paid">✓</td>
+              <td class="paid">상납</td>
                 {%- elsif ym > now_ym %}
                   {%- if is_blank %}
-              <td class="future">예정</td>
+              <td class="future">대기</td>
                   {%- else %}
               <td class="unpaid">{{ s }}</td>
                   {%- endif %}
                 {%- else %}
-              <td class="unpaid">{% if is_blank %}미납{% else %}{{ s }}{% endif %}</td>
+              <td class="unpaid">{% if is_blank %}체납{% else %}{{ s }}{% endif %}</td>
                 {%- assign unpaid_count = unpaid_count | plus: 1 -%}
                 {%- endif -%}
               {%- endfor %}
               {%- if unpaid_count > 0 %}
-              <td class="count some">{{ unpaid_count }}건<small>{{ unpaid_count | times: fee | divided_by: 10000 }}만원</small></td>
+              <td class="count some">{{ unpaid_count }}건<small>{{ unpaid_count | times: fee_man }}만원</small></td>
               {%- elsif s_due == 0 %}
               <td class="count none">-</td>
               {%- else %}
-              <td class="count zero">납부완료</td>
+              <td class="count zero">충성 ♛</td>
               {%- endif %}
             </tr>
             {%- endfor %}
@@ -320,21 +584,27 @@
     {% endfor %}
 
     <div class="legend">
-      <span><span class="dot g"></span>납부 완료</span>
-      <span><span class="dot r"></span>미납</span>
-      <span><span class="dot f"></span>예정</span>
+      <span><span class="dot g"></span>상납 완료</span>
+      <span><span class="dot r"></span>체납</span>
+      <span><span class="dot f"></span>대기 (아직 안 온 달)</span>
     </div>
 
-    <footer>마지막 업데이트: {{ site.time | date: "%Y년 %m월 %d일" }}</footer>
+    <footer>
+      <div class="omerta">— Omertà —</div>
+      장부의 내용은 패밀리 밖으로 새어나가지 않는다.<br>
+      장부 갱신: {{ site.time | date: "%Y년 %m월 %d일" }}<br>
+      <button class="reenter" id="reenter">다시 노크하기</button>
+    </footer>
   </div>
 
 <script>
   (function () {
+    var root = document.documentElement;
+    var wrap = document.getElementById('wrap');
+
+    // ── 시즌 탭 ──
     var tabs = document.querySelectorAll('.tab');
     var panels = document.querySelectorAll('.season');
-    if (!tabs.length) return;
-    document.documentElement.classList.add('js');
-
     function show(id) {
       var found = false;
       panels.forEach(function (p) { if (p.id === id) found = true; });
@@ -343,16 +613,51 @@
       tabs.forEach(function (t) { t.setAttribute('aria-selected', t.dataset.season === id ? 'true' : 'false'); });
       return true;
     }
-
     tabs.forEach(function (t) {
       t.addEventListener('click', function () {
         show(t.dataset.season);
         history.replaceState(null, '', '#' + t.dataset.season);
       });
     });
+    if (!show(location.hash.slice(1))) show('{{ data.current }}');
 
-    var hash = location.hash.slice(1);
-    if (!show(hash)) show('{{ data.current }}');
+    // ── 입장 문 ──
+    var gate = document.getElementById('gate');
+    var line = document.getElementById('gateLine');
+    var knock = document.getElementById('knock');
+    var timers = [];
+    function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
+    function type(text, cb) {
+      line.textContent = '';
+      var i = 0;
+      (function tick() {
+        line.textContent = text.slice(0, ++i);
+        if (i < text.length) later(tick, 55); else if (cb) later(cb, 650);
+      })();
+    }
+    function enter() {
+      gate.classList.add('open');
+      wrap.classList.add('in');
+      try { sessionStorage.setItem('deu-entered', '1'); } catch (e) {}
+    }
+    knock.addEventListener('click', function () {
+      knock.disabled = true;
+      gate.classList.add('shake');
+      later(function () {
+        gate.classList.remove('shake');
+        gate.classList.add('watching');
+        type('…누구냐.', function () {
+          type('…장부 보러 왔나. 들어와.', enter);
+        });
+      }, 450);
+    });
+    gate.addEventListener('dblclick', function () { timers.forEach(clearTimeout); enter(); });
+
+    document.getElementById('reenter').addEventListener('click', function () {
+      try { sessionStorage.removeItem('deu-entered'); } catch (e) {}
+      window.scrollTo(0, 0);
+      location.reload();
+    });
   })();
 </script>
 </body>
