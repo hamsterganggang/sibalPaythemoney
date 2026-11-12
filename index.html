@@ -1,24 +1,29 @@
 ---
 # 이 파일은 화면 담당입니다. 데이터 수정은 _data/payments.yml 에서 하세요.
 ---
+{%- assign data = site.data.payments -%}
+{%- assign now_ym = site.time | date: "%Y%m" | plus: 0 -%}
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ site.data.payments.title }}</title>
+<title>{{ data.title }}</title>
 <style>
   :root {
     --bg: #12141a;
     --card: #1c1f28;
+    --card-2: #232733;
     --line: #2c303d;
     --text: #e8eaf0;
     --muted: #8a8fa3;
     --gold: #e6b84c;
+    --gold-bg: rgba(230, 184, 76, 0.12);
     --paid: #3ddc84;
     --paid-bg: rgba(61, 220, 132, 0.12);
     --unpaid: #ff5c5c;
     --unpaid-bg: rgba(255, 92, 92, 0.14);
+    --future: #5d6275;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -30,8 +35,8 @@
     justify-content: center;
     padding: 32px 16px;
   }
-  .wrap { width: 100%; max-width: 640px; }
-  header { text-align: center; margin-bottom: 28px; }
+  .wrap { width: 100%; max-width: 720px; }
+  header { text-align: center; margin-bottom: 24px; }
   .badge {
     display: inline-block;
     font-size: 12px;
@@ -45,6 +50,81 @@
   h1 { font-size: 26px; font-weight: 800; }
   .subtitle { color: var(--muted); font-size: 13px; margin-top: 8px; }
 
+  /* 시즌 탭 */
+  .tabs {
+    display: flex;
+    gap: 6px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 5px;
+    margin-bottom: 16px;
+  }
+  .tab {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 10px 8px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .tab:hover { color: var(--text); }
+  .tab[aria-selected="true"] { background: var(--gold-bg); color: var(--gold); }
+  .tab .live {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--paid); margin-left: 6px; vertical-align: middle;
+  }
+
+  .season + .season { margin-top: 40px; }
+  .js .season[hidden] { display: none; }
+  .season-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .season-head h2 { font-size: 20px; font-weight: 800; }
+  .season-head .period { color: var(--muted); font-size: 13px; }
+
+  /* 요약 카드 */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .stat .label { color: var(--muted); font-size: 12px; }
+  .stat .value { font-size: 18px; font-weight: 800; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .stat .value.gold { color: var(--gold); }
+  .stat .value.green { color: var(--paid); }
+  .stat .value.red { color: var(--unpaid); }
+  .bar { height: 4px; background: var(--line); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .bar > span { display: block; height: 100%; background: var(--paid); }
+
+  .notice {
+    background: var(--card);
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  /* 표 */
   .card {
     background: var(--card);
     border: 1px solid var(--line);
@@ -52,7 +132,7 @@
     padding: 8px;
     overflow-x: auto;
   }
-  table { width: 100%; border-collapse: collapse; min-width: 420px; }
+  table { width: 100%; border-collapse: collapse; }
   th, td {
     padding: 12px 10px;
     text-align: center;
@@ -61,30 +141,32 @@
     white-space: nowrap;
   }
   tr:last-child td { border-bottom: none; }
-  thead th { color: var(--muted); font-size: 13px; font-weight: 600; }
-  td.name { font-weight: 700; text-align: left; padding-left: 16px; }
-  .paid {
-    color: var(--paid);
-    background: var(--paid-bg);
-    font-weight: 700;
+  thead th { color: var(--muted); font-size: 13px; font-weight: 600; vertical-align: bottom; }
+  thead th .yr { display: block; font-size: 10px; color: var(--gold); font-weight: 700; }
+  th.name, td.name {
+    text-align: left;
+    padding-left: 16px;
+    position: sticky;
+    left: 0;
+    background: var(--card);
+    z-index: 1;
   }
-  .unpaid {
-    color: var(--unpaid);
-    background: var(--unpaid-bg);
-    font-weight: 700;
-    font-size: 13px;
-  }
-  .count {
-    font-size: 13px;
-    font-weight: 700;
-  }
+  td.name { font-weight: 700; }
+  td.name .memo { display: block; font-size: 11px; font-weight: 500; color: var(--gold); margin-top: 2px; }
+  .paid { color: var(--paid); background: var(--paid-bg); font-weight: 700; }
+  .unpaid { color: var(--unpaid); background: var(--unpaid-bg); font-weight: 700; font-size: 13px; }
+  .future { color: var(--future); font-size: 12px; }
+  .count { font-size: 13px; font-weight: 700; }
+  .count small { display: block; font-size: 11px; font-weight: 600; opacity: .85; }
   .count.zero { color: var(--paid); }
   .count.some { color: var(--unpaid); }
+  .count.none { color: var(--future); }
 
   .legend {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    flex-wrap: wrap;
+    gap: 8px 20px;
     margin-top: 16px;
     font-size: 13px;
     color: var(--muted);
@@ -92,12 +174,13 @@
   .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
   .dot.g { background: var(--paid); }
   .dot.r { background: var(--unpaid); }
+  .dot.f { background: var(--future); }
 
-  footer {
-    text-align: center;
-    margin-top: 24px;
-    color: var(--muted);
-    font-size: 12px;
+  footer { text-align: center; margin-top: 24px; color: var(--muted); font-size: 12px; }
+
+  @media (max-width: 560px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    th, td { padding: 10px 8px; font-size: 14px; }
   }
 </style>
 </head>
@@ -105,56 +188,158 @@
   <div class="wrap">
     <header>
       <div class="badge">DEU CARTEL</div>
-      <h1>{{ site.data.payments.title }}</h1>
+      <h1>{{ data.title }}</h1>
       <p class="subtitle">인간별 · 월별 자금 납부 현황</p>
     </header>
 
-    <div class="card">
-      <table>
-        <thead>
-          <tr>
-            <th style="text-align:left; padding-left:16px;">인간</th>
-            {% for month in site.data.payments.months %}
-            <th>{{ month }}</th>
-            {% endfor %}
-            <th>미납</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for member in site.data.payments.members %}
-          <tr>
-            <td class="name">{{ member.name }}</td>
-            {% assign unpaid_count = 0 %}
-            {% for month in site.data.payments.months %}
-              {% assign i = forloop.index0 %}
-              {% assign s = member.status[i] %}
-              {% if s == "O" %}
-                <td class="paid">✓</td>
-              {% elsif s == "" or s == nil %}
-                <td class="unpaid">미납</td>
-                {% assign unpaid_count = unpaid_count | plus: 1 %}
-              {% else %}
-                <td class="unpaid">{{ s }}</td>
-                {% assign unpaid_count = unpaid_count | plus: 1 %}
-              {% endif %}
-            {% endfor %}
-            {% if unpaid_count == 0 %}
-            <td class="count zero">납부완료</td>
-            {% else %}
-            <td class="count some">{{ unpaid_count }}건</td>
-            {% endif %}
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    <nav class="tabs" role="tablist">
+      {%- for season in data.seasons %}
+      <button class="tab" role="tab" data-season="{{ season.id }}" aria-selected="{% if season.id == data.current %}true{% else %}false{% endif %}">
+        {{ season.name }}{% if season.id == data.current %}<span class="live" title="진행 중"></span>{% endif %}
+      </button>
+      {%- endfor %}
+    </nav>
+
+    {% for season in data.seasons %}
+    {%- comment -%} 1차 순회: 시즌 합계 계산 {%- endcomment -%}
+    {%- assign fee = season.fee | plus: 0 -%}
+    {%- assign s_paid = 0 -%}
+    {%- assign s_unpaid = 0 -%}
+    {%- for member in season.members -%}
+      {%- for month in season.months -%}
+        {%- assign ym = month | remove: "-" | plus: 0 -%}
+        {%- assign s = member.status[forloop.index0] -%}
+        {%- if s == "O" -%}
+          {%- assign s_paid = s_paid | plus: 1 -%}
+        {%- elsif ym <= now_ym -%}
+          {%- assign s_unpaid = s_unpaid | plus: 1 -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+    {%- assign s_due = s_paid | plus: s_unpaid -%}
+    {%- assign paid_man = s_paid | times: fee | divided_by: 10000 -%}
+    {%- assign unpaid_man = s_unpaid | times: fee | divided_by: 10000 -%}
+    {%- if s_due > 0 -%}{%- assign rate = s_paid | times: 100 | divided_by: s_due -%}{%- else -%}{%- assign rate = 0 -%}{%- endif -%}
+    {%- assign first_month = season.months | first -%}
+    {%- assign first_ym = first_month | remove: "-" | plus: 0 -%}
+
+    <section class="season" id="{{ season.id }}" role="tabpanel">
+      <div class="season-head">
+        <h2>{{ season.name }}</h2>
+        <span class="period">{{ season.period }}</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="label">월 납입금</div>
+          <div class="value gold">{{ fee | divided_by: 10000 }}만원</div>
+        </div>
+        <div class="stat">
+          <div class="label">적립액</div>
+          <div class="value green">{{ paid_man }}만원</div>
+        </div>
+        <div class="stat">
+          <div class="label">미납액</div>
+          <div class="value {% if unpaid_man > 0 %}red{% endif %}">{{ unpaid_man }}만원</div>
+        </div>
+        <div class="stat">
+          <div class="label">납부율</div>
+          <div class="value">{% if s_due > 0 %}{{ rate }}%{% else %}-{% endif %}</div>
+          <div class="bar"><span style="width: {{ rate }}%"></span></div>
+        </div>
+      </div>
+
+      {% if first_ym > now_ym %}
+      {%- assign fparts = first_month | split: "-" -%}
+      <div class="notice">{{ fparts[0] }}년 {{ fparts[1] | plus: 0 }}월부터 시작합니다 · 매달 {{ fee | divided_by: 10000 }}만원</div>
+      {% endif %}
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th class="name">인간</th>
+              {%- for month in season.months %}
+              {%- assign parts = month | split: "-" -%}
+              {%- assign mm = parts[1] | plus: 0 %}
+              <th>{% if forloop.first or mm == 1 %}<span class="yr">{{ parts[0] }}</span>{% endif %}{{ mm }}월</th>
+              {%- endfor %}
+              <th>미납</th>
+            </tr>
+          </thead>
+          <tbody>
+            {%- for member in season.members %}
+            {%- assign unpaid_count = 0 %}
+            <tr>
+              <td class="name">{{ member.name }}{% if member.memo %}<span class="memo">{{ member.memo }}</span>{% endif %}</td>
+              {%- for month in season.months %}
+                {%- assign ym = month | remove: "-" | plus: 0 -%}
+                {%- assign s = member.status[forloop.index0] -%}
+                {%- assign is_blank = false -%}
+                {%- if s == "" or s == nil -%}{%- assign is_blank = true -%}{%- endif -%}
+                {%- if s == "O" %}
+              <td class="paid">✓</td>
+                {%- elsif ym > now_ym %}
+                  {%- if is_blank %}
+              <td class="future">예정</td>
+                  {%- else %}
+              <td class="unpaid">{{ s }}</td>
+                  {%- endif %}
+                {%- else %}
+              <td class="unpaid">{% if is_blank %}미납{% else %}{{ s }}{% endif %}</td>
+                {%- assign unpaid_count = unpaid_count | plus: 1 -%}
+                {%- endif -%}
+              {%- endfor %}
+              {%- if unpaid_count > 0 %}
+              <td class="count some">{{ unpaid_count }}건<small>{{ unpaid_count | times: fee | divided_by: 10000 }}만원</small></td>
+              {%- elsif s_due == 0 %}
+              <td class="count none">-</td>
+              {%- else %}
+              <td class="count zero">납부완료</td>
+              {%- endif %}
+            </tr>
+            {%- endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endfor %}
 
     <div class="legend">
       <span><span class="dot g"></span>납부 완료</span>
       <span><span class="dot r"></span>미납</span>
+      <span><span class="dot f"></span>예정</span>
     </div>
 
     <footer>마지막 업데이트: {{ site.time | date: "%Y년 %m월 %d일" }}</footer>
   </div>
+
+<script>
+  (function () {
+    var tabs = document.querySelectorAll('.tab');
+    var panels = document.querySelectorAll('.season');
+    if (!tabs.length) return;
+    document.documentElement.classList.add('js');
+
+    function show(id) {
+      var found = false;
+      panels.forEach(function (p) { if (p.id === id) found = true; });
+      if (!found) return false;
+      panels.forEach(function (p) { p.hidden = p.id !== id; });
+      tabs.forEach(function (t) { t.setAttribute('aria-selected', t.dataset.season === id ? 'true' : 'false'); });
+      return true;
+    }
+
+    tabs.forEach(function (t) {
+      t.addEventListener('click', function () {
+        show(t.dataset.season);
+        history.replaceState(null, '', '#' + t.dataset.season);
+      });
+    });
+
+    var hash = location.hash.slice(1);
+    if (!show(hash)) show('{{ data.current }}');
+  })();
+</script>
 </body>
 </html>
